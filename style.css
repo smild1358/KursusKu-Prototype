@@ -1,0 +1,203 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #333;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+h1 {
+    font-size: 42px;
+    color: #2563eb;
+    margin-bottom: 10px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
+h3 {
+    margin-bottom: 10px;
+    color: #2563eb;
+}
+
+main > p {
+    margin-bottom: 30px;
+}
+
+section {
+    background: white;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+article {
+    background: #f8fafc;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+}
+
+article:last-child {
+    margin-bottom: 0;
+}
+
+#katalog article {
+    border-left-color: #16a34a;
+}
+
+#katalog h3 {
+    color: #16a34a;
+}
+
+@media (max-width: 600px) {
+    main {
+        padding: 25px 15px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    section {
+        padding: 20px;
+    }
+}
+.course-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.course-card {
+    border-left: 4px solid #16a34a;
+}
+
+.course-card h3 {
+    color: #16a34a;
+}
+
+.price {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 15px 0 8px;
+    color: #1e293b;
+}
+
+.status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.available {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.full {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+    .course-list {
+        grid-template-columns: 1fr;
+    }
+}
+/* =========================
+   KATALOG KURSUS
+   ========================= */
+
+#katalog {
+    overflow-x: auto;
+}
+
+#katalog table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#katalog th {
+    background: #2563eb;
+    color: white;
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+#katalog td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+#katalog tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+#katalog tbody tr:hover {
+    background: #eff6ff;
+}
+
+#katalog td:nth-child(3) {
+    font-weight: bold;
+    color: #2563eb;
+}
+
+#katalog td:nth-child(7) {
+    font-weight: bold;
+}
+
+/* Tampilan HP */
+@media (max-width: 800px) {
+
+    #katalog table {
+        min-width: 850px;
+    }
+
+    #katalog {
+        overflow-x: auto;
+    }
+}
