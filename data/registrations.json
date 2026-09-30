@@ -1,0 +1,91 @@
+[
+    {
+        "id": "TRX-P6-9A9223",
+        "nama": "Amaik",
+        "email": "amaik@gmail.com",
+        "course": "Web Development Mastering",
+        "participant_type": "Umum",
+        "learning_method": "Live Virtual Class (Interaktif Zoom)",
+        "package_qty": 1,
+        "interests": [
+            "Frontend",
+            "Backend",
+            "Database",
+            "UI\/UX",
+            "DevOps",
+            "Mobile App"
+        ],
+        "catatan": "",
+        "base_price": 500000,
+        "discount_rate": 0,
+        "discount_value": 0,
+        "grand_total": 500000,
+        "created_at": "2026-09-30 17:11:18",
+        "timestamp": "2026-09-30 17:11:18"
+    },
+    {
+        "id": "TRX-P6-42A2A1",
+        "nama": "Kevin",
+        "email": "kevin@gmail.com",
+        "course": "Data Science & Machine Learning",
+        "participant_type": "Guru",
+        "learning_method": "Live Virtual Class (Interaktif Zoom)",
+        "package_qty": 3,
+        "interests": [],
+        "catatan": "",
+        "base_price": 1950000,
+        "discount_rate": 0.15,
+        "discount_value": 292500,
+        "grand_total": 1657500,
+        "created_at": "2026-09-30 17:09:23",
+        "timestamp": "2026-09-30 17:09:23"
+    },
+    {
+        "id": "TRX-P6-A19982",
+        "nama": "Star",
+        "email": "star@gmail.com",
+        "course": "UI\/UX Design & Prototyping",
+        "participant_type": "Guru",
+        "learning_method": "Live Virtual Class (Interaktif Zoom)",
+        "package_qty": 3,
+        "interests": [
+            "Frontend",
+            "Backend",
+            "Database",
+            "UI\/UX",
+            "DevOps",
+            "Mobile App"
+        ],
+        "catatan": "",
+        "base_price": 1350000,
+        "discount_rate": 0.15,
+        "discount_value": 202500,
+        "grand_total": 1147500,
+        "created_at": "2026-09-30 17:05:41",
+        "timestamp": "2026-09-30 17:05:41"
+    },
+    {
+        "id": "TRX-P6-C9AF50",
+        "nama": "Bintang",
+        "email": "bintang@gmail.com",
+        "course": "Cyber Security Essentials",
+        "participant_type": "Mahasiswa",
+        "learning_method": "Hybrid Class (Tatap Muka + Online)",
+        "package_qty": 6,
+        "interests": [
+            "Frontend",
+            "Backend",
+            "Database",
+            "UI\/UX",
+            "DevOps",
+            "Mobile App"
+        ],
+        "catatan": "",
+        "base_price": 3600000,
+        "discount_rate": 0.2,
+        "discount_value": 720000,
+        "grand_total": 2880000,
+        "created_at": "2026-09-30 17:01:05",
+        "timestamp": "2026-09-30 17:01:05"
+    }
+]

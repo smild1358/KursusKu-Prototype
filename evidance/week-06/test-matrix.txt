@@ -1,0 +1,13 @@
+TEST MATRIX PERTEMUAN 6:
+===================================================================
+NO  | TEST CASE            | EXPECTED RESULT                       | STATUS
+-------------------------------------------------------------------
+01  | Load Form P6         | Form tampil lengkap dengan opsi loop  | PASS
+02  | Diskon Mahasiswa     | Diskon terhitung (misal: 20%)         | PASS
+03  | Diskon Guru          | Diskon terhitung (misal: 15%)         | PASS
+04  | Diskon Umum          | Tidak ada diskon / diskon 0%          | PASS
+05  | Multiple Checkbox    | Daftar minat tampil rapi sebagai array| PASS
+06  | Minat Kosong         | Tampil keterangan "Tidak ada minat"   | PASS
+07  | Validasi Nama        | Menolak submit jika nama kosong       | PASS
+08  | Riwayat Pendaftaran  | Tampil data histori dummy/simpanan    | PASS
+===================================================================
