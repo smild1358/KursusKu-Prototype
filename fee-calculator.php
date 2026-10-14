@@ -2,6 +2,7 @@
 // Inisialisasi variabel untuk input dan error
 $selectedCourse = '';
 $paymentMethod  = '';
+$participantCount = 1; // Variabel baru untuk jumlah peserta (default 1)
 $errors         = [];
 $submitted      = false;
 
@@ -15,23 +16,26 @@ $courses = [
 
 // Data Diskon Metode Pembayaran
 $paymentDiscounts = [
-    'transfer' => ['label' => 'Transfer Bank (Diskon 5%)', 'discount' => 5],
-    'ewallet'  => ['label' => 'E-Wallet (Diskon 2%)', 'discount' => 2],
+    'transfer' => ['label' => 'Transfer Bank (Diskon 5% / peserta)', 'discount' => 5],
+    'ewallet'  => ['label' => 'E-Wallet (Diskon 2% / peserta)', 'discount' => 2],
     'tunai'    => ['label' => 'Tunai / Cash (Tanpa Diskon)', 'discount' => 0]
 ];
 
 // Variabel Hasil Perhitungan
 $courseTitle     = '';
 $baseFee         = 0;
+$subtotalFee     = 0; // Subtotal untuk seluruh peserta
 $discountPercent = 0;
+$totalDiscountPercent = 0; // Total persentase setelah dikali jumlah peserta
 $discountAmount  = 0;
 $adminFee        = 25000;
 $totalFee        = 0;
 
 // Memproses Request POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $selectedCourse = $_POST['course'] ?? '';
-    $paymentMethod  = $_POST['payment_method'] ?? '';
+    $selectedCourse   = $_POST['course'] ?? '';
+    $paymentMethod    = $_POST['payment_method'] ?? '';
+    $participantCount = filter_var($_POST['participant_count'] ?? 1, FILTER_VALIDATE_INT);
 
     // Validasi Pilihan Kursus
     if (empty($selectedCourse) || !array_key_exists($selectedCourse, $courses)) {
@@ -43,16 +47,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Silakan pilih metode pembayaran yang valid.';
     }
 
+    // Validasi Jumlah Peserta
+    if ($participantCount === false || $participantCount < 1) {
+        $errors[] = 'Jumlah peserta minimal adalah 1 orang.';
+        $participantCount = 1;
+    }
+
     // Jika tidak ada error, lakukan kalkulasi
     if (empty($errors)) {
         $submitted       = true;
         $courseTitle     = $courses[$selectedCourse]['title'];
         $baseFee         = $courses[$selectedCourse]['price'];
+        $subtotalFee     = $baseFee * $participantCount;
+        
+        // Persentase diskon dasar per peserta
         $discountPercent = $paymentDiscounts[$paymentMethod]['discount'];
+        
+        // Diskon dikalikan sesuai dengan jumlah peserta
+        $totalDiscountPercent = $discountPercent * $participantCount;
 
-        // Hitung Potongan Diskon dan Total
-        $discountAmount  = intdiv($baseFee * $discountPercent, 100);
-        $totalFee        = $baseFee - $discountAmount + $adminFee;
+        // Hitung Potongan Diskon dan Total Biaya
+        $discountAmount = intdiv($subtotalFee * $totalDiscountPercent, 100);
+        $totalFee        = $subtotalFee - $discountAmount + $adminFee;
     }
 }
 ?>
@@ -81,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         h2 { margin-bottom: 20px; color: var(--primary); font-size: 22px; }
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
-        select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background-color: #fff; }
+        select, input[type="number"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background-color: #fff; }
         .error-box { background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
         .error-box ul { margin-left: 20px; }
         .summary-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-top: 24px; }
@@ -126,6 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
         </div>
 
+        <!-- Input Baru: Jumlah Peserta -->
+        <div class="form-group">
+            <label for="participant_count">Jumlah Peserta:</label>
+            <input type="number" id="participant_count" name="participant_count" min="1" value="<?= (int)$participantCount ?>">
+        </div>
+
         <div class="form-group">
             <label for="payment_method">Metode Pembayaran:</label>
             <select id="payment_method" name="payment_method">
@@ -154,11 +176,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Biaya Kursus (<?= htmlspecialchars($courseTitle) ?>)</td>
-                        <td style="text-align: right;">Rp <?= number_format($baseFee, 0, ',', '.') ?></td>
+                        <td>Biaya Kursus (<?= htmlspecialchars($courseTitle) ?> × <?= $participantCount ?> Peserta)</td>
+                        <td style="text-align: right;">Rp <?= number_format($subtotalFee, 0, ',', '.') ?></td>
                     </tr>
                     <tr>
-                        <td>Diskon Pembayaran (<?= $discountPercent ?>%)</td>
+                        <td>Diskon Pembayaran (<?= $discountPercent ?>% × <?= $participantCount ?> Peserta = <?= $totalDiscountPercent ?>%)</td>
                         <td style="text-align: right;">- Rp <?= number_format($discountAmount, 0, ',', '.') ?></td>
                     </tr>
                     <tr>
