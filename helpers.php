@@ -4,7 +4,7 @@
  * HELPER SYSTEM & DATA MANAGEMENT (Tersinkronisasi)
  * ============================================================================
  * File ini menangani penyimpanan data terpusat (Session & JSON) serta
- * fungsi bantuan untuk tampilan UI/UX yang estetik dan dinamis.
+ * fungsi bantuan untuk kalkulasi katalog dan tampilan UI/UX yang estetik.
  */
 
 // 1. Inisialisasi Session Aman
@@ -18,7 +18,7 @@ if (!defined('DATA_FILE')) {
 }
 
 /* ============================================================================
- *  FUNGSI UTAMA (VERSI AWAL - TETAP DIJAGA & TIDAK DIUBAH)
+ *  FUNGSI UTAMA MANAJEMEN DATA PENDAFTARAN (JSON & SESSION)
  * ============================================================================ */
 
 /**
@@ -77,13 +77,49 @@ function saveRegistration($newRecord) {
     return $newRecord;
 }
 
+/* ============================================================================
+ *  FUNGSI KATALOG KURSUS & FORMATTER (Sesuai Praktikum Pertemuan 4)
+ * ============================================================================ */
+
+/**
+ * Function Format Rupiah Sederhana (Menerima Integer)
+ */
+function rupiah(int $amount): string
+{
+    return 'Rp ' . number_format($amount, 0, ',', '.');
+}
+
+/**
+ * Function Penentuan Status Kursus (Penuh / Tersedia)
+ */
+function statusKursus(int $quota, int $registered): string
+{
+    return $registered >= $quota ? 'Penuh' : 'Tersedia';
+}
+
+/**
+ * Function Menghitung Sisa Kursi
+ */
+function sisaKursi(int $quota, int $registered): int
+{
+    return max(0, $quota - $registered);
+}
+
+/**
+ * Function Format Tanggal (Contoh: 2026-09-21 menjadi 21-09-2026)
+ */
+function formatTanggal(string $date): string
+{
+    $value = new DateTimeImmutable($date);
+    return $value->format('d-m-Y');
+}
 
 /* ============================================================================
  *  FUNGSI TAMBAHAN (FITUR EKSTRA & VISUAL HELPER ESTETIK)
  * ============================================================================ */
 
 /**
- * Format Angka menjadi Mata Uang Rupiah (Contoh: Rp 500.000)
+ * Format Angka menjadi Mata Uang Rupiah (Menerima Float/String)
  */
 function formatRupiah($amount) {
     return 'Rp ' . number_format((float)$amount, 0, ',', '.');
@@ -125,7 +161,7 @@ function renderSourceBadge($source) {
 }
 
 /**
- * Cari Data Pendaftaran berdasarkan ID Unik (Misal: REG-XXXXXX atau TRX-P6-XXXXXX)
+ * Cari Data Pendaftaran berdasarkan ID Unik
  */
 function findRegistrationById($id) {
     $all = getAllRegistrations();
