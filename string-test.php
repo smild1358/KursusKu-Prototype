@@ -1,405 +1,365 @@
 <?php
-// Set timezone & variabel pendukung
-date_default_timezone_set('Asia/Jakarta');
-$siteName  = 'KursusKu';
-$pageTitle = 'Eksperimen Fungsi String PHP';
+require_once __DIR__ . '/helpers.php';
 
-/* ============================================================================
- * LOGIKA PENGOLEHAN STRING (SESUAI MODUL PRAKTIKUM PERTEMUAN 4)
- * ============================================================================ */
+// Ambil input string dari GET parameter atau gunakan sampel default
+$inputString = $_GET['text'] ?? '   Selamat Datang di Platform KursusKu Prototype!   ';
 
-// 1. Teks Mentah Contoh (Sengaja Diberi Spasi Luar untuk Uji trim())
-$rawNameInput = $_GET['text'] ?? '   Laravel Fundamental & Web Dev   ';
+// Pemrosesan Manipulasi String PHP
+$originalText = $inputString;
+$trimmedText  = trim($inputString);
+$lengthRaw    = strlen($originalText);
+$lengthClean  = strlen($trimmedText);
+$wordCount    = str_word_count($trimmedText);
+$upperText    = strtoupper($trimmedText);
+$lowerText    = strtolower($trimmedText);
+$ucfirstText  = ucfirst(strtolower($trimmedText));
+$ucwordsText  = ucwords(strtolower($trimmedText));
+$reversedText = strrev($trimmedText);
 
-// 2. Pemrosesan Fungsi String Bawaan PHP
-$cleanName  = trim($rawNameInput);                  // Menghapus spasi di awal/akhir
-$upperName  = strtoupper($cleanName);               // Mengubah ke huruf kapital
-$lowerName  = strtolower($cleanName);               // Mengubah ke huruf kecil
-$lengthByte = strlen($cleanName);                   // Menghitung panjang string dalam byte
-$shortTitle = substr($cleanName, 0, 7);             // Mengambil 7 karakter pertama
-$replaced   = str_replace('Web', 'App', $cleanName);// Mengganti kata 'Web' menjadi 'App'
-$slugified  = strtolower(str_replace(' ', '-', preg_replace('/[^A-Za-z0-9\- ]/', '', $cleanName))); // Membuat URL Slug
+// Pengujian Substring dan Replacement
+$searchWord   = $_GET['search'] ?? 'KursusKu';
+$replaceWord  = $_GET['replace'] ?? 'Platform Digital';
+$replacedText = str_replace($searchWord, $replaceWord, $trimmedText);
+$posSearch    = stripos($trimmedText, $searchWord);
 ?>
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?> - <?= $siteName ?></title>
-
-    <!-- Font & Icon -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>String Manipulation Test — KursusKu</title>
+    
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --bg-main: #0a0e1a;
-            --surface: #121829;
-            --card-bg: rgba(26, 34, 56, 0.75);
-            --border: rgba(255, 255, 255, 0.12);
-            --primary: #ec4899;
-            --secondary: #8b5cf6;
-            --accent: #06b6d4;
-            --success: #10b981;
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary: #0f766e;
+            --primary-dark: #0d625b;
+            --primary-light: #ccfbf1;
+            --bg-body: #f0fdf4;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --accent: #f59e0b;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-light);
-            line-height: 1.6;
-            padding: 30px 20px;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: var(--text-dark);
             min-height: 100vh;
+            padding: 40px 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        /* HEADER */
-        .header {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .header h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .code-font {
-            font-family: 'Fira Code', monospace;
-        }
-
-        /* INPUT FORM CARD */
-        .input-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            margin-bottom: 30px;
-        }
-
-        .input-form {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .text-input {
-            flex: 1;
-            min-width: 260px;
-            padding: 12px 16px;
-            background: #060913;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: #fff;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .text-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
-        }
-
-        /* GRID RESULTS */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-
-        .function-card {
+        /* Header Navigation Card */
+        .header-card {
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .function-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
-        .fn-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .fn-name {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .fn-badge {
-            background: rgba(236, 72, 153, 0.15);
-            color: var(--primary);
-            border: 1px solid rgba(236, 72, 153, 0.3);
-            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-        }
-
-        .fn-output {
-            background: #060913;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            color: #38bdf8;
-            word-break: break-all;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-        }
-
-        .fn-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 10px;
-        }
-
-        /* SUMMARY TABLE */
-        .table-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-        }
-
-        .table-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .summary-table th, .summary-table td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .summary-table th {
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-
-        /* FOOTER NAV */
-        .nav-footer {
+            padding: 24px 30px;
+            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.08);
+            border: 1px solid rgba(15, 118, 110, 0.1);
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
-        .btn-link {
-            color: var(--accent);
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .btn-back {
             text-decoration: none;
-            font-weight: 600;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: 0.2s;
+            padding: 10px 18px;
+            background: var(--primary-light);
+            border-radius: 10px;
+            transition: all 0.2s;
         }
 
-        .btn-link:hover {
+        .btn-back:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Interactive Form Input */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Stats Grid Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 1.6rem;
+            font-weight: 800;
             color: var(--primary);
+            margin-top: 4px;
+        }
+
+        /* Detail Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .result-card h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark);
+        }
+
+        .code-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #0f172a;
+            word-break: break-all;
+            margin-bottom: 12px;
+        }
+
+        .badge-info {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
     </style>
 </head>
-
 <body>
 
-    <div class="container">
-        <!-- HEADER -->
-        <header class="header">
-            <h1><i class="fa-solid fa-font"></i> <?= $pageTitle ?></h1>
-            <p>Pengujian Manipulasi Teks & Fungsi Bawaan PHP (Sub-CPMK3 Web III)</p>
-        </header>
+<div class="container">
 
-        <!-- INPUT TESTING FORM -->
-        <div class="input-card">
-            <form method="GET" action="string-test.php" class="input-form">
-                <input type="text" name="text" class="text-input" placeholder="Ketik teks untuk diuji..." value="<?= htmlspecialchars($rawNameInput) ?>" required>
-                <button type="submit" class="btn-submit"><i class="fa-solid fa-wand-magic-sparkles"></i> Uji Teks</button>
-            </form>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
-                <i class="fa-solid fa-circle-info"></i> Teks mentah asli yang dikirim: <code class="code-font" style="color: #fbbf24;"><?= var_export($rawNameInput, true) ?></code>
+    <!-- HEADER NAVIGATION -->
+    <div class="header-card">
+        <div class="header-title">
+            <i class="fa-solid fa-font"></i>
+            <div>
+                <h1>String Test Laboratory</h1>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Pengujian Fungsi Manipulasi Teks & String PHP</p>
             </div>
         </div>
+        <a href="index.php" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog
+        </a>
+    </div>
 
-        <!-- GRID HASIL FUNGSI STRING -->
-        <div class="cards-grid">
-            <!-- 1. TRIM -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">trim($text)</span>
-                    <span class="fn-badge">Pembersih Spasi</span>
+    <!-- FORM INPUT EKSPERIMEN -->
+    <div class="form-card">
+        <form method="GET" action="string-test.php">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="text">Teks Utama:</label>
+                    <input type="text" id="text" name="text" class="form-control" value="<?= htmlspecialchars($originalText) ?>" required>
                 </div>
-                <div class="fn-output"><?= htmlspecialchars($cleanName) ?></div>
-                <div class="fn-desc">Menghapus spasi kososng di awal dan akhir teks mentah[cite: 85, 86].</div>
+                <div class="form-group">
+                    <label for="search">Cari Kata:</label>
+                    <input type="text" id="search" name="search" class="form-control" value="<?= htmlspecialchars($searchWord) ?>">
+                </div>
+                <div class="form-group">
+                    <label for="replace">Ganti Dengan:</label>
+                    <input type="text" id="replace" name="replace" class="form-control" value="<?= htmlspecialchars($replaceWord) ?>">
+                </div>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Uji Teks
+                </button>
             </div>
+        </form>
+    </div>
 
-            <!-- 2. STRTTOUPPER -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">strtoupper($text)</span>
-                    <span class="fn-badge">Huruf Kapital</span>
-                </div>
-                <div class="fn-output"><?= htmlspecialchars($upperName) ?></div>
-                <div class="fn-desc">Mengubah seluruh huruf menjadi kapital/UPPERCASE[cite: 85, 86].</div>
-            </div>
-
-            <!-- 3. STRTOLOWER -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">strtolower($text)</span>
-                    <span class="fn-badge">Huruf Kecil</span>
-                </div>
-                <div class="fn-output"><?= htmlspecialchars($lowerName) ?></div>
-                <div class="fn-desc">Mengubah seluruh karakter menjadi huruf kecil/lowercase[cite: 85, 86].</div>
-            </div>
-
-            <!-- 4. STRLEN -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">strlen($text)</span>
-                    <span class="fn-badge">Panjang String</span>
-                </div>
-                <div class="fn-output"><?= $lengthByte ?> Karakter (Byte)</div>
-                <div class="fn-desc">Menghitung jumlah total karakter setelah dibersihkan[cite: 85, 86].</div>
-            </div>
-
-            <!-- 5. SUBSTR -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">substr($text, 0, 7)</span>
-                    <span class="fn-badge">Potong String</span>
-                </div>
-                <div class="fn-output"><?= htmlspecialchars($shortTitle) ?></div>
-                <div class="fn-desc">Mengambil Sebagian karakter dari indeks 0 sebanyak 7[cite: 85, 86].</div>
-            </div>
-
-            <!-- 6. STR_REPLACE -->
-            <div class="function-card">
-                <div class="fn-top">
-                    <span class="fn-name code-font">str_replace()</span>
-                    <span class="fn-badge">Ganti Kata</span>
-                </div>
-                <div class="fn-output"><?= htmlspecialchars($replaced) ?></div>
-                <div class="fn-desc">Mengganti kata "Web" menjadi "App" di dalam teks[cite: 86].</div>
-            </div>
+    <!-- CARDS STATISTIK NATIVE -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Panjang Teks (Raw)</div>
+            <div class="value"><?= $lengthRaw ?> <small style="font-size: 0.9rem; color: var(--text-muted);">karakter</small></div>
         </div>
-
-        <!-- TABLE REFERENCE -->
-        <div class="table-card">
-            <div class="table-title">
-                <i class="fa-solid fa-book" style="color: var(--primary);"></i>
-                Referensi Fungsi String Paling Sering Digunakan di KursusKu
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="summary-table">
-                    <thead>
-                        <tr>
-                            <th>Fungsi PHP</th>
-                            <th>Kegunaan Utama</th>
-                            <th>Contoh Kasus Proyek</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code class="code-font" style="color: var(--accent);">trim()</code></td>
-                            <td>Pembersihan spasi luar pendaftaran[cite: 85, 86]</td>
-                            <td>Sanitasi nama lengkap & email pendaftar[cite: 15]</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-font" style="color: var(--accent);">htmlspecialchars()</code></td>
-                            <td>Pencegahan XSS Scripting Injection[cite: 15, 43]</td>
-                            <td>Output Escaping sebelum data ditampilkan di HTML[cite: 15, 43]</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-font" style="color: var(--accent);">substr()</code></td>
-                            <td>Pengambilan potongan string[cite: 85, 86]</td>
-                            <td>Membuat singkatan / ID Transaksi Otomatis[cite: 86]</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-font" style="color: var(--accent);">implode()</code></td>
-                            <td>Penggabungan Array menjadi Teks[cite: 15]</td>
-                            <td>Menggabungkan pilihan Checkbox Minat[cite: 11, 15]</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="stat-card">
+            <div class="label">Panjang Teks (Trimmed)</div>
+            <div class="value"><?= $lengthClean ?> <small style="font-size: 0.9rem; color: var(--text-muted);">karakter</small></div>
         </div>
-
-        <!-- FOOTER NAVIGASI -->
-        <div class="nav-footer">
-            <a href="index.php" class="btn-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda Proyek</a>
-            <a href="test-functions.php" class="btn-link">Unit Test Function <i class="fa-solid fa-arrow-right"></i></a>
+        <div class="stat-card">
+            <div class="label">Jumlah Kata</div>
+            <div class="value"><?= $wordCount ?> <small style="font-size: 0.9rem; color: var(--text-muted);">kata</small></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Posisi Kata Cari</div>
+            <div class="value">
+                <?= $posSearch !== false ? 'Index ' . $posSearch : '<span style="color: #ef4444; font-size:1.1rem;">Tidak ditemukan</span>' ?>
+            </div>
         </div>
     </div>
+
+    <!-- HASIL DETAIL MANIPULASI -->
+    <div class="results-grid">
+        
+        <!-- KOLOM 1: MENGUBAH FORMAT TEKS -->
+        <div class="result-card">
+            <h3><i class="fa-solid fa-text-height" style="color: var(--primary);"></i> Format Kapitalisasi</h3>
+            
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">UPPERCASE (strtoupper):</p>
+            <div class="code-box"><?= htmlspecialchars($upperText) ?></div>
+
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">lowercase (strtolower):</p>
+            <div class="code-box"><?= htmlspecialchars($lowerText) ?></div>
+
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Capitalize First (ucfirst):</p>
+            <div class="code-box"><?= htmlspecialchars($ucfirstText) ?></div>
+
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Title Case Each Word (ucwords):</p>
+            <div class="code-box"><?= htmlspecialchars($ucwordsText) ?></div>
+        </div>
+
+        <!-- KOLOM 2: REMOVAL & REPLACEMENT -->
+        <div class="result-card">
+            <h3><i class="fa-solid fa-scissors" style="color: var(--primary);"></i> Trim & Penggantian</h3>
+            
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Pembersihan Spasi Outter (trim):</p>
+            <div class="code-box">"<?= htmlspecialchars($trimmedText) ?>"</div>
+
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Pembalikan Karakter (strrev):</p>
+            <div class="code-box"><?= htmlspecialchars($reversedText) ?></div>
+
+            <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Hasil Penggantian Kata (str_replace):</p>
+            <div class="code-box" style="border-left: 4px solid var(--primary);"><?= htmlspecialchars($replacedText) ?></div>
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
