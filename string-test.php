@@ -21,6 +21,14 @@ $searchWord   = $_GET['search'] ?? 'KursusKu';
 $replaceWord  = $_GET['replace'] ?? 'Platform Digital';
 $replacedText = str_replace($searchWord, $replaceWord, $trimmedText);
 $posSearch    = stripos($trimmedText, $searchWord);
+
+// string-test.php
+$siteName = "KursusKu";
+$greeting = "Selamat datang di platform " . $siteName . "!";
+
+// Contoh pengujian fungsi trim() seperti pada soal lain
+$rawText = " Laravel Fundamental ";
+$trimmedText = trim($rawText);
 ?>
 <!DOCTYPE html>
 <html lang="id">

@@ -1,11 +1,15 @@
 <?php
 /**
  * ============================================================================
- * HELPER SYSTEM & DATA MANAGEMENT (Tersinkronisasi)
+ * HELPER SYSTEM & DATA MANAGEMENT (Fix & Safe Version)
  * ============================================================================
- * File ini menangani penyimpanan data terpusat (Session & JSON) serta
- * fungsi bantuan untuk kalkulasi katalog dan tampilan UI/UX yang estetik.
+ * Menangani penyimpanan data terpusat (Session & JSON) serta
+ * fungsi bantuan untuk kalkulasi katalog dan UI/UX.
  */
+
+// Aktifkan error reporting sementara untuk mendeteksi lokasi error jika ada kesalahan lain
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // 1. Inisialisasi Session Aman
 if (session_status() === PHP_SESSION_NONE) {
@@ -21,183 +25,215 @@ if (!defined('DATA_FILE')) {
  *  FUNGSI UTAMA MANAJEMEN DATA PENDAFTARAN (JSON & SESSION)
  * ============================================================================ */
 
-/**
- * Mengambil seluruh data pendaftaran dari JSON File & Session
- */
-function getAllRegistrations() {
-    $data = [];
+if (!function_exists('getAllRegistrations')) {
+    /**
+     * Mengambil seluruh data pendaftaran dari JSON File & Session
+     */
+    function getAllRegistrations() {
+        $data = [];
 
-    // 1. Ambil dari file JSON jika ada
-    if (file_exists(DATA_FILE)) {
-        $jsonContent = file_get_contents(DATA_FILE);
-        $data = json_decode($jsonContent, true) ?? [];
+        // 1. Ambil dari file JSON jika ada
+        if (file_exists(DATA_FILE)) {
+            $jsonContent = file_get_contents(DATA_FILE);
+            $data = json_decode($jsonContent, true) ?? [];
+        }
+
+        // 2. Gabungkan dengan data sementara di Session (jika ada)
+        if (!empty($_SESSION['registrations'])) {
+            $data = array_merge($_SESSION['registrations'], $data);
+        }
+
+        return $data;
     }
-
-    // 2. Gabungkan dengan data sementara di Session (jika ada)
-    if (!empty($_SESSION['registrations'])) {
-        $data = array_merge($_SESSION['registrations'], $data);
-    }
-
-    return $data;
 }
 
-/**
- * Menyimpan pendaftaran baru ke JSON File & Session
- */
-function saveRegistration($newRecord) {
-    // Beri ID Unik & Timestamp jika belum ada
-    if (empty($newRecord['id'])) {
-        $newRecord['id'] = 'REG-' . strtoupper(substr(md5(uniqid()), 0, 6));
-    }
-    if (empty($newRecord['timestamp'])) {
-        $newRecord['timestamp'] = date('Y-m-d H:i:s');
-    }
+if (!function_exists('saveRegistration')) {
+    /**
+     * Menyimpan pendaftaran baru ke JSON File & Session
+     */
+    function saveRegistration($newRecord) {
+        // Beri ID Unik & Timestamp jika belum ada
+        if (empty($newRecord['id'])) {
+            $newRecord['id'] = 'REG-' . strtoupper(substr(md5(uniqid()), 0, 6));
+        }
+        if (empty($newRecord['timestamp'])) {
+            $newRecord['timestamp'] = date('Y-m-d H:i:s');
+        }
 
-    // 1. Simpan ke Session
-    if (!isset($_SESSION['registrations'])) {
-        $_SESSION['registrations'] = [];
+        // 1. Simpan ke Session
+        if (!isset($_SESSION['registrations'])) {
+            $_SESSION['registrations'] = [];
+        }
+        array_unshift($_SESSION['registrations'], $newRecord);
+
+        // 2. Simpan Permanen ke File JSON
+        $dataDir = dirname(DATA_FILE);
+        if (!is_dir($dataDir)) {
+            mkdir($dataDir, 0777, true);
+        }
+
+        $existingData = [];
+        if (file_exists(DATA_FILE)) {
+            $jsonContent = file_get_contents(DATA_FILE);
+            $existingData = json_decode($jsonContent, true) ?? [];
+        }
+
+        array_unshift($existingData, $newRecord);
+        file_put_contents(DATA_FILE, json_encode($existingData, JSON_PRETTY_PRINT));
+
+        return $newRecord;
     }
-    array_unshift($_SESSION['registrations'], $newRecord);
-
-    // 2. Simpan Permanen ke File JSON
-    $dataDir = dirname(DATA_FILE);
-    if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0777, true);
-    }
-
-    $existingData = [];
-    if (file_exists(DATA_FILE)) {
-        $jsonContent = file_get_contents(DATA_FILE);
-        $existingData = json_decode($jsonContent, true) ?? [];
-    }
-
-    array_unshift($existingData, $newRecord);
-    file_put_contents(DATA_FILE, json_encode($existingData, JSON_PRETTY_PRINT));
-
-    return $newRecord;
 }
 
 /* ============================================================================
- *  FUNGSI KATALOG KURSUS & FORMATTER (Sesuai Praktikum Pertemuan 4)
+ *  FUNGSI KATALOG KURSUS & FORMATTER
  * ============================================================================ */
 
-/**
- * Function Format Rupiah Sederhana (Menerima Integer)
- */
-function rupiah(int $amount): string
-{
-    return 'Rp ' . number_format($amount, 0, ',', '.');
-}
-
-/**
- * Function Penentuan Status Kursus (Penuh / Tersedia)
- */
-function statusKursus(int $quota, int $registered): string
-{
-    return $registered >= $quota ? 'Penuh' : 'Tersedia';
-}
-
-/**
- * Function Menghitung Sisa Kursi
- */
-function sisaKursi(int $quota, int $registered): int
-{
-    return max(0, $quota - $registered);
-}
-
-/**
- * Function Format Tanggal (Contoh: 2026-09-21 menjadi 21-09-2026)
- */
-function formatTanggal(string $date): string
-{
-    $value = new DateTimeImmutable($date);
-    return $value->format('d-m-Y');
-}
-
-/* ============================================================================
- *  FUNGSI TAMBAHAN (FITUR EKSTRA & VISUAL HELPER ESTETIK)
- * ============================================================================ */
-
-/**
- * Format Angka menjadi Mata Uang Rupiah (Menerima Float/String)
- */
-function formatRupiah($amount) {
-    return 'Rp ' . number_format((float)$amount, 0, ',', '.');
-}
-
-/**
- * Format Tanggal menjadi Tampilan Ramah Pengguna (Contoh: 30 Sep 2026, 14:20 WIB)
- */
-function formatNiceDate($datetimeStr) {
-    if (empty($datetimeStr)) return '-';
-    $time = strtotime($datetimeStr);
-    if (!$time) return htmlspecialchars($datetimeStr);
-    return date('d M Y, H:i', $time) . ' WIB';
-}
-
-/**
- * Render Badge Kategori Peserta dengan Gaya Warna HTML Estetik
- */
-function renderParticipantBadge($type) {
-    $normalized = strtolower(trim($type));
-    switch ($normalized) {
-        case 'mahasiswa':
-            return '<span style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-user-graduate"></i> Mahasiswa</span>';
-        case 'guru':
-            return '<span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-chalkboard-user"></i> Guru</span>';
-        default:
-            return '<span style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-user"></i> Umum</span>';
+if (!function_exists('rupiah')) {
+    /**
+     * Function Format Rupiah Sederhana (Menerima Integer/Float)
+     */
+    function rupiah($amount): string
+    {
+        return 'Rp ' . number_format((float)$amount, 0, ',', '.');
     }
 }
 
-/**
- * Render Badge Sumber Data (P5 vs P6)
- */
-function renderSourceBadge($source) {
-    if (stristr($source, 'P6') !== false) {
-        return '<span style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Form P6</span>';
+if (!function_exists('formatRupiah')) {
+    /**
+     * Alias fungsi formatRupiah agar tidak crash saat dipanggil versi lain
+     */
+    function formatRupiah($amount): string
+    {
+        return rupiah($amount);
     }
-    return '<span style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Form P5</span>';
 }
 
-/**
- * Cari Data Pendaftaran berdasarkan ID Unik
- */
-function findRegistrationById($id) {
-    $all = getAllRegistrations();
-    foreach ($all as $item) {
-        if (isset($item['id']) && $item['id'] === $id) {
-            return $item;
+if (!function_exists('statusKursus')) {
+    /**
+     * Function Penentuan Status Kursus (Penuh / Tersedia)
+     */
+    function statusKursus(int $quota, int $registered): string
+    {
+        return $registered >= $quota ? 'Penuh' : 'Tersedia';
+    }
+}
+
+if (!function_exists('sisaKursi')) {
+    /**
+     * Function Menghitung Sisa Kursi
+     */
+    function sisaKursi(int $quota, int $registered): int
+    {
+        return max(0, $quota - $registered);
+    }
+}
+
+if (!function_exists('formatTanggal')) {
+    /**
+     * Function Format Tanggal Standard (ISO ke DD-MM-YYYY)
+     */
+    function formatTanggal(string $date): string
+    {
+        if (empty($date)) return '-';
+        try {
+            $value = new DateTimeImmutable($date);
+            return $value->format('d-m-Y');
+        } catch (Exception $e) {
+            return htmlspecialchars($date);
         }
     }
-    return null;
 }
 
-/**
- * Menghitung Total Statistik Pendaftaran (Total Pendaftar & Total Pendapatan)
- */
-function getRegistrationStats() {
-    $all = getAllRegistrations();
-    $totalCount   = count($all);
-    $totalRevenue = 0;
-
-    foreach ($all as $item) {
-        $totalRevenue += ($item['grand_total'] ?? $item['total_fee'] ?? $item['base_price'] ?? 0);
+if (!function_exists('formatNiceDate')) {
+    /**
+     * Format Tanggal Tampilan Lengkap (Contoh: 30 Sep 2026, 14:20 WIB)
+     */
+    function formatNiceDate($datetimeStr) {
+        if (empty($datetimeStr)) return '-';
+        $time = strtotime($datetimeStr);
+        if (!$time) return htmlspecialchars($datetimeStr);
+        return date('d M Y, H:i', $time) . ' WIB';
     }
-
-    return [
-        'total_count'   => $totalCount,
-        'total_revenue' => $totalRevenue
-    ];
 }
 
-/**
- * Menghapus/Mereset Seluruh Riwayat Data (Termasuk File JSON & Session)
- */
-function clearAllRegistrations() {
-    $_SESSION['registrations'] = [];
-    if (file_exists(DATA_FILE)) {
-        file_put_contents(DATA_FILE, json_encode([], JSON_PRETTY_PRINT));
+/* ============================================================================
+ *  FUNGSI BADGE VISUAL & STATISTIK
+ * ============================================================================ */
+
+if (!function_exists('renderParticipantBadge')) {
+    /**
+     * Render Badge Kategori Peserta dengan Gaya Warna HTML Estetik
+     */
+    function renderParticipantBadge($type) {
+        $normalized = strtolower(trim($type));
+        switch ($normalized) {
+            case 'mahasiswa':
+                return '<span style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-user-graduate"></i> Mahasiswa</span>';
+            case 'guru':
+                return '<span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-chalkboard-user"></i> Guru</span>';
+            default:
+                return '<span style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 30px; font-size: 0.75rem; font-weight: 700;"><i class="fa-solid fa-user"></i> Umum</span>';
+        }
     }
-    return true;
+}
+
+if (!function_exists('renderSourceBadge')) {
+    /**
+     * Render Badge Sumber Data (P5 vs P6)
+     */
+    function renderSourceBadge($source) {
+        if (stristr($source, 'P6') !== false) {
+            return '<span style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Form P6</span>';
+        }
+        return '<span style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Form P5</span>';
+    }
+}
+
+if (!function_exists('findRegistrationById')) {
+    /**
+     * Cari Data Pendaftaran berdasarkan ID Unik
+     */
+    function findRegistrationById($id) {
+        $all = getAllRegistrations();
+        foreach ($all as $item) {
+            if (isset($item['id']) && $item['id'] === $id) {
+                return $item;
+            }
+        }
+        return null;
+    }
+}
+
+if (!function_exists('getRegistrationStats')) {
+    /**
+     * Menghitung Total Statistik Pendaftaran (Total Pendaftar & Total Pendapatan)
+     */
+    function getRegistrationStats() {
+        $all = getAllRegistrations();
+        $totalCount   = count($all);
+        $totalRevenue = 0;
+
+        foreach ($all as $item) {
+            $totalRevenue += ($item['grand_total'] ?? $item['total_fee'] ?? $item['base_price'] ?? 0);
+        }
+
+        return [
+            'total_count'   => $totalCount,
+            'total_revenue' => $totalRevenue
+        ];
+    }
+}
+
+if (!function_exists('clearAllRegistrations')) {
+    /**
+     * Menghapus/Mereset Seluruh Riwayat Data (Termasuk File JSON & Session)
+     */
+    function clearAllRegistrations() {
+        $_SESSION['registrations'] = [];
+        if (file_exists(DATA_FILE)) {
+            file_put_contents(DATA_FILE, json_encode([], JSON_PRETTY_PRINT));
+        }
+        return true;
+    }
 }
