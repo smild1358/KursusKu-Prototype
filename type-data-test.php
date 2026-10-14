@@ -1,7 +1,8 @@
 <?php
 // Set timezone & variabel pendukung
 date_default_timezone_set('Asia/Jakarta');
-$siteName  = 'KursusKu';$pageTitle = 'Inspektur Tipe Data PHP';
+$siteName  = 'KursusKu';
+$pageTitle = 'Inspektur Tipe Data PHP';
 
 /* ============================================================================
  * PENDEKLARASI SAMPEL TIPE DATA (SESUAI MATERI PERTEMUAN 3)
@@ -28,11 +29,13 @@ $discountCode = null;
 /* ============================================================================
  * FUNGSI BANTU PENAMPIL INSPEKSI TIPE DATA
  * ============================================================================ */
-function inspectVariable($var) {$type = gettype($var);$rawValue = '';
+function inspectVariable($var) {
+    $type = gettype($var);
+    $rawValue = '';
 
     switch ($type) {
         case 'boolean':
-            $rawValue =$var ? 'true' : 'false';
+            $rawValue = $var ? 'true' : 'false';
             break;
         case 'array':
             $rawValue = json_encode($var, JSON_PRETTY_PRINT);
@@ -56,12 +59,12 @@ function inspectVariable($var) {$type = gettype($var);$rawValue = '';
 
 // Daftar variabel untuk diinspeksi
 $sampleVariables = [
-    'Nama Kursus ($courseName)'       =>$courseName,
-    'Biaya Kursus ($courseFee)'       =>$courseFee,
-    'Rating ($rating)'               =>$rating,
-    'Status Aktif ($isActive)'        =>$isActive,
-    'Modul Topik ($topics)'          =>$topics,
-    'Kode Diskon ($discountCode)'    =>$discountCode,
+    'Nama Kursus ($courseName)'       => $courseName,
+    'Biaya Kursus ($courseFee)'       => $courseFee,
+    'Rating ($rating)'               => $rating,
+    'Status Aktif ($isActive)'        => $isActive,
+    'Modul Topik ($topics)'          => $topics,
+    'Kode Diskon ($discountCode)'    => $discountCode,
 ];
 ?>
 <!DOCTYPE html>
@@ -191,4 +194,167 @@ $sampleVariables = [
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             padding: 12px 16px;
-            font-family: 'Fira Code
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        /* SUMMARY TABLE */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        /* FOOTER NAV */
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-link {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-link:hover {
+            color: #a78bfa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <h1><i class="fa-solid fa-vial"></i> <?= $pageTitle ?></h1>
+            <p>Pengujian Variabel & Tipe Data PHP Dalam Lingkungan Server (Sub-CPMK2 Web III)</p>
+        </header>
+
+        <!-- GRID INSPEKSI VARIABEL -->
+        <div class="cards-grid">
+            <?php foreach ($sampleVariables as $label => $val): 
+                $info = inspectVariable($val);
+                $pillClass = 'pill-' . $info['type'];
+            ?>
+                <div class="type-card">
+                    <div class="card-top">
+                        <span class="var-label"><?= htmlspecialchars($label) ?></span>
+                        <span class="type-pill <?= $pillClass ?>"><?= $info['type'] ?></span>
+                    </div>
+                    <div class="value-box"><?= $info['value'] ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- TABLE RINGKASAN TIPE DATA -->
+        <div class="table-card">
+            <div class="table-title">
+                <i class="fa-solid fa-list-check" style="color: #38bdf8;"></i>
+                Matriks Karakteristik Tipe Data PHP
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Tipe Data</th>
+                            <th>Sintaks PHP</th>
+                            <th>Contoh Penggunaan KursusKu</th>
+                            <th>Sifat Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong style="color: var(--type-string);">String</strong></td>
+                            <td><code style="color: var(--type-string);">'Text'</code></td>
+                            <td>Nama Kursus, Tanggal ISO</td>
+                            <td>Kumpulan karakter alfanumerik</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--type-int);">Integer</strong></td>
+                            <td><code style="color: var(--type-int);">350000</code></td>
+                            <td>Biaya Rupiah, Jumlah Peserta</td>
+                            <td>Bilangan bulat tanpa koma desimal</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--type-float);">Float / Double</strong></td>
+                            <td><code style="color: var(--type-float);">4.85</code></td>
+                            <td>Rating Kelas, Diskon Persen Desimal</td>
+                            <td>Bilangan pecahan/desimal</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--type-bool);">Boolean</strong></td>
+                            <td><code style="color: var(--type-bool);">true / false</code></td>
+                            <td>Status Aktif, Status Penuh</td>
+                            <td>Nilai kebenaran biner</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--type-array);">Array</strong></td>
+                            <td><code style="color: var(--type-array);">['A', 'B']</code></td>
+                            <td>Daftar Topik, Katalog Kursus</td>
+                            <td>Kumpulan banyak nilai dalam 1 variabel</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--type-null);">NULL</strong></td>
+                            <td><code style="color: var(--type-null);">null</code></td>
+                            <td>Voucher Kosong, Data Belum Diisi</td>
+                            <td>Variabel tanpa nilai/kosong</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FOOTER NAVIGASI -->
+        <div class="nav-footer">
+            <a href="index.php" class="btn-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda Proyek</a>
+            <a href="fee-calculator.php" class="btn-link">Kalkulator Biaya (Aritmatika) <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+</body>
+</html>
