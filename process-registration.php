@@ -1,5 +1,24 @@
 <?php
-// Data Daftar Kursus
+require_once __DIR__ . '/helpers.php';
+
+// ============================================================================
+// PENANGANAN PENGAJUAN NON-POST (OTOMATIS MENGELUARKAN RESPONS JSON)
+// ============================================================================
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Content-Type: application/json; charset=utf-8');
+    
+    echo json_encode([
+        'status'  => 'error',
+        'code'    => 405,
+        'message' => 'Method Not Allowed. Halaman ini hanya dapat diakses melalui pengiriman Form Pendaftaran (Metode POST).',
+        'timestamp' => date('Y-m-d H:i:s')
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    
+    exit;
+}
+
+// Data Daftar Kursus Master
 $courses = [
     'web_dasar' => ['title' => 'Web Dasar', 'price' => 300000],
     'php_dasar' => ['title' => 'PHP Dasar', 'price' => 350000],
@@ -7,11 +26,11 @@ $courses = [
     'react_js'  => ['title' => 'React JS Mastery', 'price' => 450000]
 ];
 
-// Inisialisasi & Tangkap Data POST
-$name            = trim($_POST['name'] ?? '');
-$participantType = $_POST['participant_type'] ?? '';
-$selectedCourse  = $_POST['course'] ?? '';
-$interests       = $_POST['interests'] ?? [];
+// Inisialisasi & Tangkap Data POST dengan trim() dan null coalescing (??)
+$name            = trim($_POST['name'] ?? $_POST['nama'] ?? '');
+$participantType = $_POST['participant_type'] ?? $_POST['status_pekerjaan'] ?? '';
+$selectedCourse  = $_POST['course'] ?? $_POST['course_code'] ?? '';
+$interests       = $_POST['interests'] ?? $_POST['facilities'] ?? [];
 
 $errors   = [];
 $adminFee = 25000;
@@ -45,6 +64,20 @@ if (empty($errors)) {
 
     $discountAmount = intdiv($baseFee * $discountPercent, 100);
     $totalFee       = $baseFee - $discountAmount + $adminFee;
+
+    // Simpan pendaftaran jika fungsi helper tersedia
+    if (function_exists('saveRegistration')) {
+        saveRegistration([
+            'nama'             => $name,
+            'course_name'      => $courseTitle,
+            'base_price'       => $baseFee,
+            'status_pekerjaan' => $participantType,
+            'discount_percent' => $discountPercent,
+            'discount_amount'  => $discountAmount,
+            'grand_total'      => $totalFee,
+            'source'           => 'Form POST P5'
+        ]);
+    }
 }
 ?>
 <!doctype html>
@@ -54,8 +87,9 @@ if (empty($errors)) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hasil Pendaftaran - KursusKu</title>
     <!-- Google Fonts & FontAwesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
             --primary: #0f766e;
@@ -82,6 +116,8 @@ if (empty($errors)) {
 
         body {
             background-color: var(--bg);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -116,7 +152,7 @@ if (empty($errors)) {
 
         .header h1 {
             font-size: 24px;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         .header p {
@@ -196,7 +232,7 @@ if (empty($errors)) {
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             width: fit-content;
         }
 
@@ -269,6 +305,11 @@ if (empty($errors)) {
             color: var(--primary);
         }
 
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
         /* Actions */
         .btn {
             display: inline-flex;
@@ -278,7 +319,7 @@ if (empty($errors)) {
             width: 100%;
             padding: 14px;
             border-radius: 10px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 15px;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -334,7 +375,7 @@ if (empty($errors)) {
                     <?php endforeach; ?>
                 </ul>
             </div>
-            <a href="registration-form.php" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> Kembali ke Form</a>
+            <a href="registration.php" class="btn btn-primary"><i class="fa-solid fa-arrow-left"></i> Kembali ke Form</a>
         </div>
 
     <?php else: ?>
@@ -354,19 +395,19 @@ if (empty($errors)) {
                 </div>
                 <div class="info-item">
                     <span class="info-label">Tipe Peserta</span>
-                    <span class="badge badge-<?= $participantType ?>">
+                    <span class="badge badge-<?= htmlspecialchars($participantType) ?>">
                         <?= ucfirst(htmlspecialchars($participantType)) ?>
                     </span>
                 </div>
                 <div class="info-item" style="grid-column: span 2;">
-                    <span class="info-label">Minat Pembelajaran</span>
+                    <span class="info-label">Minat Pembelajaran / Fasilitas</span>
                     <div class="tag-container">
                         <?php if (!empty($interests)): ?>
                             <?php foreach ($interests as $interest): ?>
                                 <span class="tag"><i class="fa-solid fa-check"></i> <?= htmlspecialchars($interest) ?></span>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <span class="info-value" style="color: var(--text-muted); font-style: italic; font-weight: normal;">Tidak memilih minat spesifik</span>
+                            <span class="info-value" style="color: var(--text-muted); font-style: italic; font-weight: normal;">Tidak memilih item spesifik</span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -387,25 +428,25 @@ if (empty($errors)) {
                             <strong><?= htmlspecialchars($courseTitle) ?></strong><br>
                             <small style="color: var(--text-muted);">Biaya Standar Kursus</small>
                         </td>
-                        <td style="text-align: right;">Rp <?= number_format($baseFee, 0, ',', '.') ?></td>
+                        <td style="text-align: right;" class="mono"><?= rupiah($baseFee) ?></td>
                     </tr>
                     <tr class="discount-row">
                         <td>Diskon Tipe Peserta (<?= $discountPercent ?>%)</td>
-                        <td style="text-align: right;">- Rp <?= number_format($discountAmount, 0, ',', '.') ?></td>
+                        <td style="text-align: right;" class="mono">- <?= rupiah($discountAmount) ?></td>
                     </tr>
                     <tr>
                         <td>Biaya Administrasi</td>
-                        <td style="text-align: right;">Rp <?= number_format($adminFee, 0, ',', '.') ?></td>
+                        <td style="text-align: right;" class="mono"><?= rupiah($adminFee) ?></td>
                     </tr>
                     <tr class="total-row">
                         <td>Total Pembayaran</td>
-                        <td style="text-align: right;">Rp <?= number_format($totalFee, 0, ',', '.') ?></td>
+                        <td style="text-align: right;" class="mono"><?= rupiah($totalFee) ?></td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Tombol Aksi -->
-            <a href="registration-form.php" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Daftar Kursus Lain</a>
+            <a href="registration.php" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Daftar Kursus Lain</a>
             <a href="index.php" class="btn btn-outline"><i class="fa-solid fa-house"></i> Kembali ke Beranda</a>
         </div>
     <?php endif; ?>

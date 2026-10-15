@@ -4,8 +4,8 @@ require_once __DIR__ . '/helpers.php';
 $siteName = 'KursusKu';
 $year     = date('Y');
 
-// 1. Data Dummy Riwayat Transaksi Lama (P6)
-$legacyHistoryData = [
+// 1. Data Dummy Riwayat Transaksi Utama (Array $registrations)
+$registrations = [
     [
         'id'               => 'TRX001',
         'timestamp'        => '2026-09-28 10:15:00',
@@ -44,12 +44,14 @@ $legacyHistoryData = [
 // 2. Ambil data pendaftar baru dari helper (jika ada)
 $dynamicRegistrations = function_exists('getAllRegistrations') ? getAllRegistrations() : [];
 
-// 3. Gabungkan Data Tanpa Menghilangkan/Mengurangi Data Lama
-$allRegistrations = array_merge($dynamicRegistrations, $legacyHistoryData);
+// 3. Gabungkan Data Tanpa Menghilangkan Data Dummy Utama ($registrations)
+if (!empty($dynamicRegistrations)) {
+    $registrations = array_merge($dynamicRegistrations, $registrations);
+}
 
 // Kalkulasi Statistik Ringkas
-$totalTransaksi = count($allRegistrations);
-$totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
+$totalTransaksi = count($registrations);
+$totalPendapatan = array_reduce($registrations, function ($acc, $item) {
     return $acc + ($item['grand_total'] ?? $item['total_fee'] ?? $item['total'] ?? 0);
 }, 0);
 ?>
@@ -62,12 +64,9 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
     <title><?= htmlspecialchars($siteName) ?> — Riwayat Transaksi & Pendaftaran</title>
 
     <!-- Font & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- External Base Styles -->
-    <link rel="stylesheet" href="assets/css/style.css">
-
     <style>
         :root {
             --primary: #0f766e;
@@ -75,18 +74,71 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
             --primary-light: #ccfbf1;
             --accent: #6366f1;
             --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 50%, #f3e8ff 100%);
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-border: rgba(255, 255, 255, 0.7);
             --text-main: #0f172a;
             --text-muted: #64748b;
         }
 
-        body {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
             background: var(--bg-gradient);
             background-attachment: fixed;
             color: var(--text-main);
             min-height: 100vh;
+        }
+
+        /* Navbar Layout */
+        .site-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .navbar a.active, .navbar a:hover {
+            color: var(--primary);
         }
 
         .history-wrapper {
@@ -270,7 +322,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
             color: #334155;
             padding: 4px 8px;
             border-radius: 6px;
-            font-family: monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             font-size: 0.82rem;
         }
@@ -329,6 +381,14 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
             gap: 12px;
             color: var(--primary-dark);
         }
+
+        .site-footer {
+            text-align: center;
+            padding: 24px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 40px;
+        }
     </style>
 </head>
 
@@ -336,12 +396,12 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
 
     <!-- NAVBAR UTAMA -->
     <header class="site-header">
-        <div class="container nav-wrap">
+        <div class="nav-wrap">
             <a href="index.php" class="brand"><i class="fa-solid fa-graduation-cap"></i> <?= htmlspecialchars($siteName) ?></a>
             <nav class="navbar">
                 <a href="index.php">Beranda</a>
                 <a href="form-p5.php">Form P5</a>
-                <a href="daftar-p6.php">Daftar P6</a>
+                <a href="register.php">Daftar P6</a>
                 <a href="history.php" class="active">History</a>
             </nav>
         </div>
@@ -353,7 +413,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
         <div class="page-header">
             <span class="badge-pill"><i class="fa-solid fa-clock-rotate-left"></i> Data Terintegrasi P5 & P6</span>
             <h1>Riwayat Pendaftaran & Transaksi</h1>
-            <p>Gabungan data dummy historis dengan data pendaftaran baru secara *real-time*.</p>
+            <p>Gabungan data dummy historis dengan data pendaftaran baru secara <em>real-time</em>.</p>
         </div>
 
         <!-- DASHBOARD RINGKASAN (STAT CARDS) -->
@@ -376,7 +436,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
                 <div class="stat-icon purple"><i class="fa-solid fa-database"></i></div>
                 <div class="stat-info">
                     <div class="label">Sumber Data</div>
-                    <div class="value">Legacy + Sync Data</div>
+                    <div class="value">Array $registrations</div>
                 </div>
             </div>
         </div>
@@ -386,7 +446,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
             <div class="table-header-action">
                 <div>
                     <h3 style="font-weight: 800; font-size: 1.2rem; color: #0f172a;">Daftar Transaksi Masuk</h3>
-                    <p style="font-size: 0.85rem; color: #64748b;">Menampilkan seluruh data tanpa mengubah record sebelumnya.</p>
+                    <p style="font-size: 0.85rem; color: #64748b;">Menampilkan seluruh data pendaftaran tersimpan.</p>
                 </div>
 
                 <!-- Input Pencarian Realtime Javascript -->
@@ -409,24 +469,25 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($allRegistrations)): ?>
-                            <?php foreach ($allRegistrations as $row): ?>
+                        <?php if (!empty($registrations)): ?>
+                            <!-- MENGGUNAKAN FOREACH UNTUK MERENDER ARRAY $registrations -->
+                            <?php foreach ($registrations as $row): ?>
                                 <?php
                                     $id           = $row['id'] ?? 'TRX-UNKNOWN';
                                     $nama         = $row['nama'] ?? $row['name'] ?? '-';
                                     $email        = $row['email'] ?? 'tidak.ada@email.com';
-                                    $course       = $row['course'] ?? $row['kursus'] ?? '-';
-                                    $type         = $row['participant_type'] ?? $row['profession'] ?? $row['level'] ?? 'Umum';
-                                    $interests    = $row['interests'] ?? [];
+                                    $course       = $row['course'] ?? $row['course_name'] ?? $row['kursus'] ?? '-';
+                                    $type         = $row['participant_type'] ?? $row['profession'] ?? $row['status_pekerjaan'] ?? 'Umum';
+                                    $interests    = $row['interests'] ?? $row['facilities'] ?? [];
                                     $totalFee     = $row['grand_total'] ?? $row['total_fee'] ?? $row['total'] ?? 0;
                                     $source       = $row['source'] ?? 'Form P5/P6 Sync';
-                                    $timestamp    = $row['timestamp'] ?? $row['date'] ?? date('Y-m-d');
+                                    $timestamp    = $row['timestamp'] ?? $row['date'] ?? date('Y-m-d H:i:s');
                                     $isLegacy     = str_contains(strtolower($source), 'dummy') || str_contains(strtolower($source), 'lama');
                                 ?>
                                 <tr>
                                     <td>
                                         <span class="badge-code"><?= htmlspecialchars($id) ?></span><br>
-                                        <small style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; vertical-align: middle;">
+                                        <small style="color: #94a3b8; font-size: 0.78rem; font-weight: 600;">
                                             <i class="fa-regular fa-clock" style="margin-top: 4px;"></i> <?= htmlspecialchars($timestamp) ?>
                                         </small>
                                     </td>
@@ -438,7 +499,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
                                         <span style="font-weight: 700; color: #1e293b;"><?= htmlspecialchars($course) ?></span>
                                     </td>
                                     <td>
-                                        <span class="badge-type"><?= htmlspecialchars($type) ?></span>
+                                        <span class="badge-type"><?= htmlspecialchars(ucfirst($type)) ?></span>
                                         <?php if (!empty($interests) && is_array($interests)): ?>
                                             <div>
                                                 <?php foreach ($interests as $interest): ?>
@@ -448,7 +509,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <strong style="color: #059669; font-size: 0.95rem;">
+                                        <strong style="color: #059669; font-size: 0.95rem; font-family: 'JetBrains Mono', monospace;">
                                             Rp <?= number_format($totalFee, 0, ',', '.') ?>
                                         </strong>
                                     </td>
@@ -465,7 +526,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
                             <tr>
                                 <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
                                     <i class="fa-solid fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
-                                    <p>Belum ada riwayat pendaftaran tersimpan.</p>
+                                    <p>Belum ada riwayat pendaftaran tersimpan pada $registrations.</p>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -474,7 +535,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
             </div>
 
             <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                <a href="daftar-p6.php" class="btn-back-link">
+                <a href="register.php" class="btn-back-link">
                     <i class="fa-solid fa-arrow-left"></i> Kembali ke Form Pendaftaran (P6)
                 </a>
                 <a href="form-p5.php" class="btn-back-link" style="color: #6366f1;">
@@ -487,7 +548,7 @@ $totalPendapatan = array_reduce($allRegistrations, function ($acc, $item) {
 
     <!-- FOOTER -->
     <footer class="site-footer">
-        <div class="container footer-content">
+        <div class="nav-wrap" style="justify-content: center;">
             <p>&copy; <?= $year ?> <strong><?= htmlspecialchars($siteName) ?></strong>. Hak Cipta Dilindungi.</p>
         </div>
     </footer>
